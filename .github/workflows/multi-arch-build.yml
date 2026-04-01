@@ -12,62 +12,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout репозитория
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
-      # 2️⃣ Скачиваем OpenWrt SDK
-      - name: Download OpenWrt SDK
-        run: |
-          SDK_URL="https://downloads.openwrt.org/releases/24.10.6/targets/mediatek/filogic/openwrt-sdk-24.10.6-mediatek-filogic_gcc-13.3.0_musl.Linux-x86_64.tar.zst"
-          wget $SDK_URL -O sdk.tar.zst
-          tar --use-compress-program=unzstd -xf sdk.tar.zst
-          mv openwrt-sdk-* sdk
+      - name: Build
+        uses: immortalwrt/gh-action-sdk@v7
+        env:
+          ARCH: aarch64_cortex-a53-openwrt-24.10
+          FEEDNAME: v2raya_ci
+          PACKAGES: ca-certificates v2fly-geodata v2ray-core xray-core v2raya luci-app-v2raya
+          NO_REFRESH_CHECK: 1
+          INDEX: 0
+          KEY_BUILD: ${{ secrets.USIGN_KEY }}
+          V: s
 
-      # 3️⃣ Устанавливаем Go 1.26.1
-      - name: Setup Go 1.26.1
-        uses: actions/setup-go@v6
-        with:
-          go-version: '1.26.1'
-
-      # 4️⃣ Проверяем версию Go
-      - name: Check Go version
-        run: go version
-
-      # 5️⃣ Обновляем feeds (только стандартные)
-      - name: Update feeds
-        run: |
-          cd sdk
-          ./scripts/feeds update -a
-          ./scripts/feeds install -a
-
-      # 6️⃣ Сборка пакетов напрямую (без menuconfig)
-      - name: Build packages
-        run: |
-          export TERM=dumb
-          cd sdk
-          make package/ca-certificates/compile V=s
-          make package/v2fly-geodata/compile V=s
-          make package/v2ray-core/compile V=s
-          make package/xray-core/compile V=s
-          make package/v2raya/compile V=s
-          make package/luci-app-v2raya/compile V=s
-
-      # 7️⃣ Загружаем готовые ipk
       - name: Store packages
         uses: actions/upload-artifact@v5
         with:
           name: aarch64_cortex-a53-${{ github.sha }}-packages
-          path: sdk/bin/packages/aarch64_cortex-a53/*/*.ipk
+          path: bin/packages/aarch64_cortex-a53/v2raya_ci/*.ipk
 
-      # 8️⃣ Сохраняем логи сборки
       - name: Store logs
         uses: actions/upload-artifact@v5
         with:
           name: aarch64_cortex-a53-${{ github.sha }}-logs
-          path: sdk/logs/
+          path: logs/
 
-      # 9️⃣ Удаляем логи после хранения
       - name: Remove logs
-        run: sudo rm -rf sdk/logs/ || true
+        run: sudo rm -rf logs/ || true
