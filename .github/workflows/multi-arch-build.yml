@@ -19,7 +19,7 @@ jobs:
       - name: Build
         uses: openwrt/gh-action-sdk@main
         env:
-          ARCH: aarch64_cortex-a53-25.12.2
+          ARCH: mediatek-filogic-25.12.2
           FEEDNAME: v2raya_ci
           PACKAGES: xray-core v2raya luci-app-v2raya
           NO_REFRESH_CHECK: 1
