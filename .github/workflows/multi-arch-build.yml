@@ -18,15 +18,15 @@ jobs:
           SDK_URL="https://downloads.openwrt.org/releases/24.10.6/targets/mediatek/filogic/openwrt-sdk-24.10.6-mediatek-filogic_gcc-13.3.0_musl.Linux-x86_64.tar.zst"
           wget $SDK_URL -O sdk.tar.zst
           tar --use-compress-program=unzstd -xf sdk.tar.zst
-          mv openwrt-sdk-24.10.6-mediatek-filogic_gcc-13.3.0_musl sdk
+          mv openwrt-sdk-* sdk
 
-      # 2️⃣ Настраиваем Go (в SDK он уже есть)
-      - name: Setup Go
+      # 2️⃣ Настраиваем PATH и проверяем Go
+      - name: Setup Go from SDK
         run: |
           export PATH="$PWD/sdk/staging_dir/toolchain-aarch64_cortex-a53_gcc-13.3.0_musl/bin:$PATH"
           go version
 
-      # 3️⃣ Копируем feed v2raya_ci
+      # 3️⃣ Добавляем feed v2raya_ci
       - name: Add v2raya feed
         run: |
           mkdir -p sdk/feeds
@@ -58,12 +58,13 @@ jobs:
           name: aarch64_cortex-a53-${{ github.sha }}-packages
           path: sdk/bin/packages/aarch64_cortex-a53/v2raya_ci/*.ipk
 
-      # 7️⃣ Логи сборки
+      # 7️⃣ Сохраняем логи сборки
       - name: Store logs
         uses: actions/upload-artifact@v5
         with:
           name: aarch64_cortex-a53-${{ github.sha }}-logs
           path: sdk/logs/
 
+      # 8️⃣ Удаляем логи после хранения
       - name: Remove logs
         run: sudo rm -rf sdk/logs/ || true
