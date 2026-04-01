@@ -12,32 +12,58 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
+      # 1️⃣ Скачиваем OpenWrt SDK
+      - name: Download OpenWrt SDK
+        run: |
+          SDK_URL="https://downloads.openwrt.org/releases/24.10.6/targets/mediatek/filogic/openwrt-sdk-24.10.6-mediatek-filogic_gcc-13.3.0_musl.Linux-x86_64.tar.zst"
+          wget $SDK_URL -O sdk.tar.zst
+          tar --use-compress-program=unzstd -xf sdk.tar.zst
+          mv openwrt-sdk-24.10.6-mediatek-filogic_gcc-13.3.0_musl sdk
 
-      - name: Build
-        uses: immortalwrt/gh-action-sdk@v7
-        env:
-          ARCH: aarch64_cortex-a53-openwrt-24.10
-          FEEDNAME: v2raya_ci
-          PACKAGES: ca-certificates v2fly-geodata v2ray-core xray-core v2raya luci-app-v2raya
-          NO_REFRESH_CHECK: 1
-          INDEX: 0
-          KEY_BUILD: ${{ secrets.USIGN_KEY }}
-          V: s
+      # 2️⃣ Настраиваем Go (в SDK он уже есть)
+      - name: Setup Go
+        run: |
+          export PATH="$PWD/sdk/staging_dir/toolchain-aarch64_cortex-a53_gcc-13.3.0_musl/bin:$PATH"
+          go version
 
+      # 3️⃣ Копируем feed v2raya_ci
+      - name: Add v2raya feed
+        run: |
+          mkdir -p sdk/feeds
+          cp -r ./feeds/v2raya_ci sdk/feeds/v2raya_ci
+          echo "src-link v2raya_ci ./feeds/v2raya_ci" >> sdk/feeds.conf.default
+
+      # 4️⃣ Обновляем feeds
+      - name: Update feeds
+        run: |
+          cd sdk
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+
+      # 5️⃣ Сборка пакетов
+      - name: Build packages
+        run: |
+          cd sdk
+          make package/ca-certificates/compile V=s
+          make package/v2fly-geodata/compile V=s
+          make package/v2ray-core/compile V=s
+          make package/xray-core/compile V=s
+          make package/v2raya/compile V=s
+          make package/luci-app-v2raya/compile V=s
+
+      # 6️⃣ Загружаем готовые ipk
       - name: Store packages
         uses: actions/upload-artifact@v5
         with:
           name: aarch64_cortex-a53-${{ github.sha }}-packages
-          path: bin/packages/aarch64_cortex-a53/v2raya_ci/*.ipk
+          path: sdk/bin/packages/aarch64_cortex-a53/v2raya_ci/*.ipk
 
+      # 7️⃣ Логи сборки
       - name: Store logs
         uses: actions/upload-artifact@v5
         with:
           name: aarch64_cortex-a53-${{ github.sha }}-logs
-          path: logs/
+          path: sdk/logs/
 
       - name: Remove logs
-        run: sudo rm -rf logs/ || true
+        run: sudo rm -rf sdk/logs/ || true
