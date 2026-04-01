@@ -36,8 +36,6 @@ jobs:
         with:
           name: aarch64_cortex-a53-${{ github.sha }}-packages
           path: |
-            Packages
-            Packages.*
             *.ipk
 
       - name: Store logs
