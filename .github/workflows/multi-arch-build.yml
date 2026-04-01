@@ -19,9 +19,7 @@ jobs:
       - name: Build
         uses: openwrt/gh-action-sdk@main
         env:
-          ARCH: aarch64_cortex-a53-24.10.6
-          TARGET: mediatek
-          SUBTARGET: filogic
+          SDK_URL: https://downloads.openwrt.org/releases/24.10.6/targets/mediatek/filogic/openwrt-sdk-24.10.6-mediatek-filogic_gcc-13.3.0_musl.Linux-x86_64.tar.zst
           FEEDNAME: v2raya_ci
           PACKAGES: ca-certificates v2fly-geodata v2ray-core xray-core v2raya luci-app-v2raya
           NO_REFRESH_CHECK: 1
@@ -41,4 +39,4 @@ jobs:
           path: logs/
 
       - name: Remove logs
-        run: sudo rm -rf logs/ || true
+        run: rm -rf logs/ || true
