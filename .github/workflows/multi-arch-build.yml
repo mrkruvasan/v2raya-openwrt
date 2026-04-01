@@ -17,9 +17,9 @@ jobs:
           fetch-depth: 0
 
       - name: Build
-        uses: immortalwrt/gh-action-sdk@master
+        uses: openwrt/gh-action-sdk@main
         env:
-          ARCH: aarch64_cortex-a53-openwrt-24.10
+          ARCH: aarch64_cortex-a53-24.10.6
           FEEDNAME: v2raya_ci
           PACKAGES: ca-certificates v2fly-geodata v2ray-core xray-core v2raya luci-app-v2raya
           NO_REFRESH_CHECK: 1
