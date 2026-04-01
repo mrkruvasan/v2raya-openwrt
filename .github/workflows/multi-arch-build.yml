@@ -17,14 +17,12 @@ jobs:
           fetch-depth: 0
 
       - name: Build
-        uses: immortalwrt/gh-action-sdk@v7
+        uses: immortalwrt/gh-action-sdk@master
         env:
           ARCH: aarch64_cortex-a53-openwrt-24.10
           FEEDNAME: v2raya_ci
           PACKAGES: ca-certificates v2fly-geodata v2ray-core xray-core v2raya luci-app-v2raya
           NO_REFRESH_CHECK: 1
-          INDEX: 0
-          KEY_BUILD: ${{ secrets.USIGN_KEY }}
           V: s
 
       - name: Store packages
