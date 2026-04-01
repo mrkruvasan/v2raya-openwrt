@@ -27,16 +27,11 @@ jobs:
           KEY_BUILD: ${{ secrets.USIGN_KEY }}
           V: s
 
-      - name: Move created ipk to project dir
-        run: |
-          cp bin/packages/aarch64_cortex-a53/v2raya_ci/*.ipk . || true
-
       - name: Store packages
         uses: actions/upload-artifact@v5
-        if: github.event_name != 'release'
         with:
           name: aarch64_cortex-a53-${{ github.sha }}-packages
-          path: "*.ipk"
+          path: bin/packages/aarch64_cortex-a53/v2raya_ci/*.ipk
 
       - name: Store logs
         uses: actions/upload-artifact@v5
