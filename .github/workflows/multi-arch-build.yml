@@ -25,7 +25,7 @@ jobs:
           tar --use-compress-program=unzstd -xf sdk.tar.zst
           mv openwrt-sdk-* sdk
 
-      # 3️⃣ Устанавливаем Go 1.26.1 через actions/setup-go
+      # 3️⃣ Устанавливаем Go 1.26.1
       - name: Setup Go 1.26.1
         uses: actions/setup-go@v6
         with:
@@ -42,9 +42,10 @@ jobs:
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
-      # 6️⃣ Сборка пакетов
+      # 6️⃣ Сборка пакетов напрямую (без menuconfig)
       - name: Build packages
         run: |
+          export TERM=dumb
           cd sdk
           make package/ca-certificates/compile V=s
           make package/v2fly-geodata/compile V=s
