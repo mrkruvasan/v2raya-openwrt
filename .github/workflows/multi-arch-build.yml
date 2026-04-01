@@ -1,4 +1,4 @@
-name: Build OpenWrt 25.12.0 packages (AX3000T)
+name: Build OpenWrt 25.12.2 packages (AX3000T)
 
 on:
   workflow_dispatch:
@@ -7,11 +7,11 @@ on:
       - 'ax3000t-*'
 
 env:
-  OPENWRT_VERSION: 25.12.0
+  OPENWRT_VERSION: 25.12.2
   OPENWRT_TARGET: mediatek
   OPENWRT_SUBTARGET: filogic
-  PACKAGE_DIRS: xray-core v2ray-core v2fly-geodata v2raya luci-app-v2raya ca-certificates
-  PACKAGE_NAMES: xray-core v2ray-core v2fly-geodata v2raya luci-app-v2raya ca-certificates
+  PACKAGE_DIRS: xray-core v2raya luci-app-v2raya ca-certificates
+  PACKAGE_NAMES: xray-core v2raya luci-app-v2raya ca-certificates
 
 jobs:
   build:
