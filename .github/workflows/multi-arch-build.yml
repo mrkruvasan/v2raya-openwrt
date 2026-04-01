@@ -19,7 +19,7 @@ jobs:
       - name: Build
         uses: openwrt/gh-action-sdk@main
         env:
-          ARCH: aarch64_cortex-a53-24.10.6
+          ARCH: aarch64_cortex-a53-25.12.2
           FEEDNAME: v2raya_ci
           PACKAGES: ca-certificates v2fly-geodata v2ray-core xray-core v2raya luci-app-v2raya
           NO_REFRESH_CHECK: 1
@@ -29,7 +29,7 @@ jobs:
         uses: actions/upload-artifact@v5
         with:
           name: aarch64_cortex-a53-${{ github.sha }}-packages
-          path: bin/packages/aarch64_cortex-a53/v2raya_ci/*.ipk
+          path: bin/packages/aarch64_cortex-a53/v2raya_ci/*.apk
 
       - name: Store logs
         uses: actions/upload-artifact@v5
