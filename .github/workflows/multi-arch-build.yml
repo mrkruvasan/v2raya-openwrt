@@ -1,42 +1,101 @@
-name: Build v2rayA feed
+name: Build OpenWrt 25.12.0 packages (AX3000T)
 
 on:
   workflow_dispatch:
-  release:
-    types:
-      - published
+  push:
+    tags:
+      - 'ax3000t-*'
+
+env:
+  OPENWRT_VERSION: 25.12.0
+  OPENWRT_TARGET: mediatek
+  OPENWRT_SUBTARGET: filogic
+  PACKAGE_DIRS: xray-core v2ray-core v2fly-geodata v2raya luci-app-v2raya ca-certificates
+  PACKAGE_NAMES: xray-core v2ray-core v2fly-geodata v2raya luci-app-v2raya ca-certificates
 
 jobs:
   build:
-    name: Build packages for aarch64_cortex-a53
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Build
-        uses: openwrt/gh-action-sdk@main
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ccache gettext libncurses5-dev xsltproc zstd curl
+
+      - name: Prepare OpenWrt SDK
         env:
-          ARCH: aarch64_cortex-a53-25.12.2
-          FEEDNAME: v2raya_ci
-          PACKAGES: ca-certificates v2fly-geodata v2ray-core xray-core v2raya luci-app-v2raya
-          NO_REFRESH_CHECK: 1
-          V: sc
+          SDK_BASE_URL: https://downloads.openwrt.org/releases/${{ env.OPENWRT_VERSION }}/targets/${{ env.OPENWRT_TARGET }}/${{ env.OPENWRT_SUBTARGET }}
+          SDK_NAME_PATTERN: -sdk-${{ env.OPENWRT_VERSION }}-${{ env.OPENWRT_TARGET }}-${{ env.OPENWRT_SUBTARGET }}_
+        run: |
+          set -euxo pipefail
+          mkdir -p "$HOME/sdk-cache"
+          cd "$HOME/sdk-cache"
+          wget -q -O sha256sums "$SDK_BASE_URL/sha256sums"
+          SDK_FILE="$(grep -- "$SDK_NAME_PATTERN" sha256sums | awk '{print $2}' | sed 's#\*##g' | head -n1)"
+          [ -n "$SDK_FILE" ]
+          if [ ! -f "$SDK_FILE" ]; then
+            wget -q "$SDK_BASE_URL/$SDK_FILE"
+          fi
+          grep -- "$SDK_FILE" sha256sums > sha256sums.sdk
+          sha256sum -c sha256sums.sdk
+          mkdir -p "$HOME/openwrt-sdk"
+          case "$SDK_FILE" in
+            *.tar.zst) tar --zstd -xf "$SDK_FILE" -C "$HOME/openwrt-sdk" --strip=1 ;;
+            *.tar.xz) tar -Jxf "$SDK_FILE" -C "$HOME/openwrt-sdk" --strip=1 ;;
+            *) echo "Unsupported SDK archive format: $SDK_FILE" && exit 1 ;;
+          esac
 
-      - name: Store packages
-        uses: actions/upload-artifact@v5
+      - name: Update feeds and inject packages
+        env:
+          OPENWRT_GOLANG_COMMIT: ${{ secrets.OPENWRT_GOLANG_COMMIT }}
+        run: |
+          set -euxo pipefail
+          cd "$HOME/openwrt-sdk"
+          cp feeds.conf.default feeds.conf
+          sed -i 's#git.openwrt.org/openwrt/openwrt#github.com/openwrt/openwrt#' feeds.conf
+          sed -i 's#git.openwrt.org/feed/packages#github.com/openwrt/packages#' feeds.conf
+          sed -i 's#git.openwrt.org/project/luci#github.com/openwrt/luci#' feeds.conf
+          sed -i 's#git.openwrt.org/feed/telephony#github.com/openwrt/telephony#' feeds.conf
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+          # Копируем все локальные пакеты
+          for pkg in ${{ env.PACKAGE_DIRS }}; do
+            ln -sf "${GITHUB_WORKSPACE}/$pkg" "package/$pkg"
+          done
+
+      - name: Build all packages
+        run: |
+          set -euxo pipefail
+          cd "$HOME/openwrt-sdk"
+          make defconfig
+          for pkg in ${{ env.PACKAGE_DIRS }}; do
+            make "package/$pkg/clean"
+            make "package/$pkg/compile" V=s
+          done
+
+      - name: Collect all APKs
+        run: |
+          set -euxo pipefail
+          mkdir -p "$GITHUB_WORKSPACE/dist"
+          for pkg in ${{ env.PACKAGE_NAMES }}; do
+            find "$HOME/openwrt-sdk/bin/packages/" -type f -name "*${pkg}*.apk" -exec cp -v {} "$GITHUB_WORKSPACE/dist/" \;
+          done
+          ls -lh "$GITHUB_WORKSPACE/dist"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
         with:
-          name: aarch64_cortex-a53-${{ github.sha }}-packages
-          path: bin/packages/aarch64_cortex-a53/v2raya_ci/*.ipk
+          name: openwrt-${{ env.OPENWRT_VERSION }}-${{ env.OPENWRT_TARGET }}-${{ env.OPENWRT_SUBTARGET }}-packages
+          path: dist/*.apk
           if-no-files-found: error
 
-      - name: Store logs
-        uses: actions/upload-artifact@v5
+      - name: Create release on tag
+        if: startsWith(github.ref, 'refs/tags/ax3000t-')
+        uses: softprops/action-gh-release@v2
         with:
-          name: aarch64_cortex-a53-${{ github.sha }}-logs
-          path: logs/
-
-      - name: Remove logs
-        run: sudo rm -rf logs/ || true
+          files: dist/*.apk
