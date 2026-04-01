@@ -23,19 +23,9 @@ jobs:
           FEEDNAME: v2raya_ci
           PACKAGES: ca-certificates v2fly-geodata v2ray-core xray-core v2raya luci-app-v2raya
           NO_REFRESH_CHECK: 1
-          INDEX: 1
+          INDEX: 0
           KEY_BUILD: ${{ secrets.USIGN_KEY }}
           V: s
-
-      - name: Upload feed
-        uses: Pendect/action-rsyncer@9738db02560c333bf629a1533bd86ceda138e599
-        with:
-          flags: '-ahvHP'
-          options: '--delete'
-          src: 'bin/packages/aarch64_cortex-a53/v2raya_ci/'
-          dest: '${{ secrets.SF_USER }}@frs.sourceforge.net:/home/frs/project/v2raya/openwrt/aarch64_cortex-a53/'
-        env:
-          DEPLOY_KEY: ${{ secrets.SF_KEY }}
 
       - name: Move created packages to project dir
         run: cp bin/packages/aarch64_cortex-a53/v2raya_ci/* . || true
