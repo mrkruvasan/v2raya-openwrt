@@ -19,7 +19,7 @@ jobs:
       - name: Build
         uses: openwrt/gh-action-sdk@main
         env:
-          ARCH: mediatek-filogic-25.12.2
+          ARCH: mediatek-filogic-24.10.6
           FEEDNAME: v2raya_ci
           PACKAGES: xray-core v2raya luci-app-v2raya
           NO_REFRESH_CHECK: 1
@@ -29,14 +29,5 @@ jobs:
         uses: actions/upload-artifact@v5
         with:
           name: aarch64_cortex-a53-${{ github.sha }}-packages
-          path: bin/packages/aarch64_cortex-a53/v2raya_ci/*.apk
+          path: bin/packages/aarch64_cortex-a53/v2raya_ci/*.ipk
           if-no-files-found: error
-
-      - name: Store logs
-        uses: actions/upload-artifact@v5
-        with:
-          name: aarch64_cortex-a53-${{ github.sha }}-logs
-          path: logs/
-
-      - name: Remove logs
-        run: sudo rm -rf logs/ || true
