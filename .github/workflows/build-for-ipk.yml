@@ -2,9 +2,6 @@ name: Build v2rayA for ipk
 
 on:
   workflow_dispatch:
-  release:
-    types:
-      - published
 
 jobs:
   build:
