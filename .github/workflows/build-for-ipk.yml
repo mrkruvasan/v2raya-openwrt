@@ -2,10 +2,25 @@ name: Build v2rayA for ipk
 
 on:
   workflow_dispatch:
+    inputs:
+      arch:
+        description: "SDK ARCH (example: mediatek-filogic-24.10.6)"
+        required: true
+        default: "mediatek-filogic-24.10.6"
+
+      packages:
+        description: "Packages to build (space separated)"
+        required: true
+        default: "ca-certificates luci-app-v2raya v2raya xray-core"
+
+      feedname:
+        description: "Feed name"
+        required: true
+        default: "v2raya_ci"
 
 jobs:
   build:
-    name: Build packages for aarch64_cortex-a53
+    name: Build OpenWrt packages
     runs-on: ubuntu-latest
 
     steps:
@@ -13,18 +28,18 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Build
+      - name: Build packages
         uses: openwrt/gh-action-sdk@main
         env:
-          ARCH: mediatek-filogic-24.10.6
-          FEEDNAME: v2raya_ci
-          PACKAGES: ca-certificates luci-app-v2raya v2raya xray-core
+          ARCH: ${{ inputs.arch }}
+          FEEDNAME: ${{ inputs.feedname }}
+          PACKAGES: ${{ inputs.packages }}
           NO_REFRESH_CHECK: 1
           V: sc
 
       - name: Store packages
         uses: actions/upload-artifact@v5
         with:
-          name: aarch64_cortex-a53-${{ github.sha }}-packages
-          path: bin/packages/aarch64_cortex-a53/v2raya_ci/*.ipk
+          name: packages-${{ inputs.arch }}-${{ github.sha }}
+          path: bin/packages/**/*.ipk
           if-no-files-found: error
