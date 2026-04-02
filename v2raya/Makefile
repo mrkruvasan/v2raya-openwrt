@@ -1,7 +1,3 @@
-# SPDX-License-Identifier: GPL-3.0-only
-#
-# Copyright (C) 2021-2023 ImmortalWrt.org
-
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=v2rayA
@@ -15,7 +11,6 @@ PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)/service
 
 PKG_LICENSE:=AGPL-3.0-only
 PKG_LICENSE_FILES:=LICENSE
-PKG_MAINTAINER:=Tianling Shen <cnsztl@immortalwrt.org>
 
 PKG_BUILD_DEPENDS:=golang/host
 PKG_BUILD_PARALLEL:=1
