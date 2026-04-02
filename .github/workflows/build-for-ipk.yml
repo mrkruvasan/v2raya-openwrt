@@ -13,11 +13,6 @@ on:
         required: true
         default: "ca-certificates luci-app-v2raya v2raya xray-core"
 
-      feedname:
-        description: "Feed name"
-        required: true
-        default: "v2raya_ci"
-
 jobs:
   build:
     name: Build OpenWrt packages
@@ -32,7 +27,7 @@ jobs:
         uses: openwrt/gh-action-sdk@main
         env:
           ARCH: ${{ inputs.arch }}
-          FEEDNAME: ${{ inputs.feedname }}
+          FEEDNAME: v2raya_ci
           PACKAGES: ${{ inputs.packages }}
           NO_REFRESH_CHECK: 1
           V: sc
