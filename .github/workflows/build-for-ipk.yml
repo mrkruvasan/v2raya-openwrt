@@ -12,11 +12,6 @@ on:
           - mediatek-filogic-25.12.2 (apk)
         default: mediatek-filogic-24.10.6 (ipk)
 
-      packages:
-        description: "Packages to build (space separated)"
-        required: true
-        default: "ca-certificates luci-app-v2raya v2raya xray-core"
-
 jobs:
   build:
     name: Build OpenWrt packages
@@ -29,7 +24,6 @@ jobs:
 
       - name: Prepare ARCH value
         run: |
-          # Убираем подпись (ipk/apk) из выбранного значения
           ARCH_VALUE="${{ inputs.arch }}"
           ARCH_VALUE=$(echo "$ARCH_VALUE" | sed 's/ (ipk)//' | sed 's/ (apk)//')
           echo "ARCH=$ARCH_VALUE" >> $GITHUB_ENV
@@ -39,7 +33,7 @@ jobs:
         env:
           ARCH: ${{ env.ARCH }}
           FEEDNAME: v2raya_ci
-          PACKAGES: ${{ inputs.packages }}
+          PACKAGES: ca-certificates luci-app-v2raya v2raya xray-core
           NO_REFRESH_CHECK: 1
           V: sc
 
