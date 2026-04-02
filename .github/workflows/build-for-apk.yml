@@ -21,7 +21,7 @@ jobs:
         env:
           ARCH: mediatek-filogic-25.12.2
           FEEDNAME: v2raya_ci
-          PACKAGES: ca-certificates luci-app-v2raya v2fly-geodata v2ray-core v2raya xray-core
+          PACKAGES: ca-certificates luci-app-v2raya v2raya xray-core
           NO_REFRESH_CHECK: 1
           V: sc
 
