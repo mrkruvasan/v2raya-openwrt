@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: Build packages for mediatek-filogic
+    name: Build packages for aarch64_cortex-a53
     runs-on: ubuntu-latest
 
     steps:
@@ -28,14 +28,14 @@ jobs:
       - name: Store packages
         uses: actions/upload-artifact@v5
         with:
-          name: mediatek-filogic-${{ github.sha }}-packages
-          path: bin/packages/mediatek-filogic/v2raya_ci/*.apk
+          name: aarch64_cortex-a53-${{ github.sha }}-packages
+          path: bin/packages/aarch64_cortex-a53/v2raya_ci/*.apk
           if-no-files-found: error
 
       - name: Store logs
         uses: actions/upload-artifact@v5
         with:
-          name: mediatek-filogic-${{ github.sha }}-logs
+          name: aarch64_cortex-a53-${{ github.sha }}-logs
           path: logs/
 
       - name: Remove logs
