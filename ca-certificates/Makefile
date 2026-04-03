@@ -3,7 +3,6 @@ include $(TOPDIR)/rules.mk
 PKG_NAME:=ca-certificates
 PKG_VERSION:=20260223
 PKG_RELEASE:=1
-PKG_MAINTAINER:=
 
 PKG_LICENSE:=GPL-2.0-or-later MPL-2.0
 PKG_LICENSE_FILES:=debian/copyright
